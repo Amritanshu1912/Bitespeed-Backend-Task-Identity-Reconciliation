@@ -1,5 +1,5 @@
 
-# FluxKart Customer Identification Web Service
+# Customer Identity Reconciliation Web Service
 
 This repository contains a web service that helps identify and consolidate customer information based on their contact information across multiple purchases. It exposes an /identify endpoint to receive HTTP POST requests and returns the consolidated contact information.
 
