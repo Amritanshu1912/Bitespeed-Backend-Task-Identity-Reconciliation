@@ -1,11 +1,10 @@
 const express = require("express");
 const contacts = require("./contacts");
-const { Op } = require("sequelize");
+const sequelize = require("./database");
+const { Op } = require('sequelize');
 const {
-  createForPrimary,
-  consolidateForPrimary,
-  createForSecondary,
-  consolidateForSecondary,
+  createContact,
+  consolidateContacts,
   bedrBothPrimary,
   bedrOneSecondary,
   bedrBothSecondary,
@@ -18,14 +17,40 @@ router.post("/", async (req, res) => {
   try {
     const { email: email_, phoneNumber: phoneNumber_ } = req.body;
 
-    // Find the primary contact based on email or phone_number
-    const foundContact = await contacts.findOne({
+    //check for empyt parameters
+    if (email_ === "" && phoneNumber_ === "") {
+      res.status(422).json({
+        error: "Empty paramater string",
+      });
+    }
+
+    //find the count of request email and phNo.
+    const countResults = await contacts.findOne({
+      attributes: [
+        [sequelize.literal('COUNT(DISTINCT "email")'), "countEmail"],
+        [
+          sequelize.literal('COUNT(DISTINCT "phone_number")'),
+          "countPhoneNumber",
+        ],
+      ],
       where: {
-        [Op.or]: [{ email: email_ }, { phone_number: phoneNumber_ }],
+        email: email_,
+        phone_number: phoneNumber_,
       },
+      raw: true,
     });
 
-    if (foundContact === null) {
+    if (countResults && countResults.countEmail !== undefined && countResults.countPhoneNumber !== undefined) {
+      // The properties exist, can access them here
+      console.log("Count Email:", countResults.countEmail);
+      console.log("Count Phone Number:", countResults.countPhoneNumber);
+    } else {
+      console.log("Count results are undefined or missing properties");
+    }
+    const countEmail = countResults.countEmail;
+    const countPhoneNumber = countResults.countPhoneNumber;
+    //-----------------------------------------------------------------------------------------------------------------//
+    if (countEmail === 0 && countPhoneNumber === 0) {
       // If contact doesn't exist, create a new contact as primary
       const newContact = await contacts.create({
         email: email_,
@@ -42,85 +67,90 @@ router.post("/", async (req, res) => {
           secondaryContactIds: [],
         },
       });
-    } else {
-      if (
-        foundContact.email === email_ &&
-        foundContact.phone_number === phoneNumber_
-      ) {
-        // If recieved contact exists and both eail and phone_number belong to the same row
-        // we dont have to create a new row, we can simply return 200 with apt payload
+    } else if (countEmail !== 0 && countPhoneNumber !== 0) {
+      //both exists
+      const foundContact = await contacts.findOne({
+        where: {
+          email: email_,
+          phone_number: phoneNumber_,
+        },
+      });
+      if (foundContact !== null) {
+        /*
+          if such a row exists where email = requested email and ph = requested ph
+          no need to update rows,
+          just consolidate
+        */
+        // consolidate Contact
+        const contact = await consolidateContacts(foundContact);
 
-        if (foundContact.link_precedence === "primary") {
-          // consolidate Contact when LP is Primary
-          const newContact = await consolidateForPrimary(foundContact);
-          // Send the response
-          res.status(200).json({ newContact });
-        } else {
-          // consolidate Contact when LP is Secondary
-          const newContact = await consolidateForSecondary(foundContact);
-          // Send the response
-          res.status(200).json({ newContact });
-        }
-      } else if (foundContact.email == email_) {
-        // find contact with phonumber
-        const foundContact2 = await contacts.findOne({
-          where: { phone_number: phoneNumber_ },
-        });
-
-        if (foundContact2 !== null) {
-          // if it exists, phNumber belongs to a different row
-          // if it doesnt exist then we know that only one of the two fields matches
-          // which can be handled in the next else block
-
-          // check if both are primary, or one primary and one secondary or both secondary
-          if (
-            foundContact.link_precedence === "primary" &&
-            foundContact2.link_precedence == "primary"
-          ) {
-            // both exists in different rows and both are primary,
-            // bedr : both exist in different rows
-            const newContact = bedrBothPrimary(foundContact, foundContact2);
-            // Send the response
-            res.status(200).json({ newContact });
-          } else if (
-            foundContact.link_precedence === "secondary" &&
-            foundContact2.link_precedence == "secondary"
-          ) {
-            // both exists in different rows and both are secondary,
-            // bedr : both exist in different rows
-            const newContact = bedrBothSecondary(
-              foundContact,
-              foundContact2,
-              email_,
-              phoneNumber_
-            );
-            // Send the response
-            res.status(200).json({ newContact });
-          } else {
-            // one primary and one secondary
-            const newContact = bedrOneSecondary(foundContact, foundContact2);
-            // Send the response
-            res.status(200).json({ newContact });
-          }
-        }
+        // Send the response
+        res.status(200).json({ contact });
       } else {
-        // only phone Number OR email matches
-        if (foundContact.link_precedence === "primary") {
-          // create Contact when LP is Primary
-          await createForPrimary(foundContact, email_, phoneNumber_);
-          // consolidate Contact when LP is Primary
-          const newContact = await consolidateForPrimary(foundContact);
+        //req email and ph exist in different rows. 
+        //find first row where email - req email and fir row where email - req email
+        const foundContactwithEmail = await contacts.findOne({
+          where: { email: email_ },
+          order: [["id", "ASC"]],
+        });
+        const foundContactwithPhone = await contacts.findOne({
+          where: { phone_number: phoneNumber_ },
+          order: [["id", "ASC"]],
+        });
+        if (
+          foundContactwithEmail.link_precedence === "primary" &&
+          foundContactwithPhone.link_precedence === "primary"
+        ) {
+          // both exists in different rows and both are primary,
+          // bedr : both exist in different rows
+          const contact = await bedrBothPrimary(
+            foundContactwithEmail,
+            foundContactwithPhone
+          );
           // Send the response
-          res.status(200).json({ newContact });
+          res.status(200).json({ contact });
+        } else if (
+          foundContactwithEmail.link_precedence === "secondary" &&
+          foundContactwithPhone.link_precedence === "secondary"
+        ) {
+          // both exists in different rows and both are secondary,
+          // bedr : both exist in different rows
+          const contact = await bedrBothSecondary(
+            foundContactwithEmail,
+            foundContactwithPhone,
+            email_,
+            phoneNumber_
+          );
+          // Send the response
+          res.status(200).json({ contact });
         } else {
-          // create Contact when LP is Secondary
-          await createForSecondary(foundContact, email_, phoneNumber_);
-          // consolidate Contact when LP is Secondary
-          const newContact = await consolidateForSecondary(foundContact);
+          // one primary and one secondary
+          const contact = await bedrOneSecondary(
+            foundContactwithEmail,
+            foundContactwithPhone,
+            email_,
+            phoneNumber_
+          );
           // Send the response
-          res.status(200).json({ newContact });
+          res.status(200).json({ contact });
         }
       }
+    } else {
+      // Case where only EITHER phone Number OR email matches
+      // Find the first contact that macthes
+      const foundContact = await contacts.findOne({
+        where: {
+          [Op.or]: [{ email: email_ }, { phone_number: phoneNumber_ }],
+        },
+        order: [["id", "ASC"]],
+      });
+
+      // create Contact
+      await createContact(foundContact, email_, phoneNumber_);
+      // consolidate Contact
+      const contact = await consolidateContacts(foundContact);
+      // Send the response
+      res.status(200).json({ contact });
     }
   } catch (error) {
     console.error("Error identifying contact:", error);
