@@ -35,6 +35,7 @@ async function findSecondaryContacts(foundContact) {
             where: {
                 linked_id: link_precedence === "primary" ? id : linked_id,
             },
+            order: [["id", "ASC"]],
         });
 
         const secondaryContactIdArray =
@@ -81,12 +82,10 @@ async function createContact(foundContact, email_, phoneNumber_) {
  * @throws {Error} If there is an error creating the contact.
  * @returns {Object} The consolidated contact object.
  */
-async function consolidateContacts(foundContact) {
+async function consolidateContacts(foundContact, email_, phoneNumber_) {
     try {
         console.log("entered consolidateContacts function");
-        console.log("with arguments ->", foundContact);
-
-        const { email, phone_number } = foundContact;
+        console.log("with arguments ->", foundContact, email_, phoneNumber_);
 
         const primaryContact = await findPrimaryContact(foundContact);
 
@@ -95,9 +94,9 @@ async function consolidateContacts(foundContact) {
         // Consolidate the contact information
         const newContact = {
             primaryContactId: primaryContact.id,
-            emails: Array.from(new Set([primaryContact.email, email])),
+            emails: Array.from(new Set([primaryContact.email, email_])),
             phoneNumbers: Array.from(
-                new Set([primaryContact.phone_number, phone_number])
+                new Set([primaryContact.phone_number, phoneNumber_.toString()])
             ),
             secondaryContactIds: secondaryContactIdArray,
         };
@@ -294,8 +293,8 @@ async function bedrBothSecondary(
                 });
         }
 
-        const primaryContact = findPrimaryContact(olderContact);
-        const secondaryContactIdArray = findSecondaryContacts(olderContact);
+        const primaryContact = await findPrimaryContact(olderContact);
+        const secondaryContactIdArray = await findSecondaryContacts(olderContact);
 
         // consolidate contacts
         const newContact = {

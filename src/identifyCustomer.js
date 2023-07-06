@@ -24,32 +24,8 @@ router.post("/", async (req, res) => {
       });
     }
 
-    //find the count of request email and phNo.
-    const countResults = await contacts.findOne({
-      attributes: [
-        [sequelize.literal('COUNT(DISTINCT "email")'), "countEmail"],
-        [
-          sequelize.literal('COUNT(DISTINCT "phone_number")'),
-          "countPhoneNumber",
-        ],
-      ],
-      where: {
-        email: email_,
-        phone_number: phoneNumber_,
-      },
-      raw: true,
-    });
+    const { countEmail, countPhoneNumber } = await countResults(email_, phoneNumber_);
 
-    if (countResults && countResults.countEmail !== undefined && countResults.countPhoneNumber !== undefined) {
-      // The properties exist, can access them here
-      console.log("Count Email:", countResults.countEmail);
-      console.log("Count Phone Number:", countResults.countPhoneNumber);
-    } else {
-      console.log("Count results are undefined or missing properties");
-    }
-    const countEmail = countResults.countEmail;
-    const countPhoneNumber = countResults.countPhoneNumber;
-    //-----------------------------------------------------------------------------------------------------------------//
     if (countEmail === 0 && countPhoneNumber === 0) {
       // If contact doesn't exist, create a new contact as primary
       const newContact = await contacts.create({
@@ -79,10 +55,9 @@ router.post("/", async (req, res) => {
         /*
           if such a row exists where email = requested email and ph = requested ph
           no need to update rows,
-          just consolidate
+          consolidate Contact
         */
-        // consolidate Contact
-        const contact = await consolidateContacts(foundContact);
+        const contact = await consolidateContacts(foundContact,email_, phoneNumber_);
 
         // Send the response
         res.status(200).json({ contact });
@@ -157,5 +132,40 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
+async function countResults(email_, phoneNumber_) {
+  // Find the count of requested email and phoneNumber.
+  const countResults = await contacts.findOne({
+    attributes: [
+      [
+        sequelize.literal(`SUM(CASE WHEN email = '${email_}' THEN 1 ELSE 0 END)`),
+        "emailCount",
+      ],
+      [
+        sequelize.literal(`SUM(CASE WHEN phone_number = '${phoneNumber_}' THEN 1 ELSE 0 END)`),
+        "phoneNumberCount",
+      ],
+    ],
+    raw: true,
+  });
+
+  const { emailCount, phoneNumberCount } = countResults;
+
+  if (countResults && emailCount !== undefined && phoneNumberCount !== undefined) {
+    // Convert count values to integers
+    const countEmail = emailCount === null ? 0 : parseInt(emailCount);
+    const countPhoneNumber = phoneNumberCount === null ? 0 : parseInt(phoneNumberCount);
+
+    // Return the count results
+    return {
+      countEmail,
+      countPhoneNumber
+    };
+  } else {
+    console.log("Count results are undefined or missing properties");
+    return null;
+  }
+}
 
 module.exports = router;
