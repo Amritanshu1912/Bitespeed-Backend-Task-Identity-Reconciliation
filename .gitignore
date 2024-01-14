@@ -1,1 +1,61 @@
+# Ignore system and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+
+# Ignore Node.js and npm files
 node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore compiled Java files
+target/
+*.class
+
+# Ignore log and temporary files
+log/
+logs/
+temp/
+tmp/
+*.logs
+.prettierrc
+.eslintrc.json
+
+# Ignore compiled C/C++ files
+*.o
+*.out
+
+# Ignore database files
+*.sqlite
+*.sqlite3
+
+# Ignore macOS specific files
+.AppleDouble
+.LSOverride
+Icon
+
+# Ignore Windows specific files
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+
+# Ignore editor backup files
+*~
+*.swp
+
+# Ignore package manager files
+composer.phar
+composer.lock
+yarn.lock
