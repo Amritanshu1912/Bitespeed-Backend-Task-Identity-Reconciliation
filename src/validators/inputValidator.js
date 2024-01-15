@@ -1,4 +1,3 @@
-const logger = require("../utils/logger.js");
 const { body, validationResult } = require("express-validator");
 
 // Validation for the registerUser endpoint
@@ -15,21 +14,26 @@ const validateLoginUser = [
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
+// Validation for the identify endpoint
+const validateContact = [
+  body("email").trim().isEmail().withMessage("Invalid email"),
+  body("phone_number")
+    .trim()
+    .isMobilePhone()
+    .withMessage("Invalid phone number"),
+];
+
 // Validation error handler middleware
 const handleValidationErrors = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      // Log the validation errors
-      logger.error(errors.array());
-
-      // Return a more descriptive status code
+      req.logger.error(errors.array());
       return res.status(422).json({ errors: errors.array() });
     }
     next();
   } catch (error) {
-    // Log any unexpected errors
-    logger.error(error);
+    req.logger.error(error);
     next(error);
   }
 };
@@ -37,5 +41,6 @@ const handleValidationErrors = async (req, res, next) => {
 module.exports = {
   validateRegisterUser,
   validateLoginUser,
+  validateContact,
   handleValidationErrors,
 };

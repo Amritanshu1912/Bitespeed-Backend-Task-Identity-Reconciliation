@@ -1,4 +1,3 @@
-// src/routes/authRoutes.js
 const express = require("express");
 const router = express.Router();
 const { signup, signin, logout } = require("../controllers/authController.js");
@@ -6,7 +5,13 @@ const {
   validateRegisterUser,
   validateLoginUser,
   handleValidationErrors,
-} = require("../validators/authInputValidator.js");
+} = require("../validators/inputValidator.js");
+
+// Middleware to log incoming requests
+router.use((req, res, next) => {
+  req.logger.info(`Received ${req.method} request at ${req.originalUrl}`);
+  next();
+});
 
 router.post("/signup", validateRegisterUser, handleValidationErrors, signup);
 router.post("/signin", validateLoginUser, handleValidationErrors, signin);

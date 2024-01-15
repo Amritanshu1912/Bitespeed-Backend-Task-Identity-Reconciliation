@@ -1,4 +1,3 @@
-// src/controllers/authController.js
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../database/models/users");
@@ -12,6 +11,7 @@ const signup = async (req, res) => {
       where: { username: username },
     });
     if (existingUser) {
+      req.logger.warn(`Username ${username} already exists`);
       return res.status(400).json({ message: "Username already taken" });
     }
 
@@ -23,9 +23,10 @@ const signup = async (req, res) => {
       username: username,
       password: hashedPassword,
     });
-
+    req.logger.info(`User ${username} registered successfully`);
     res.status(201).send({ status: "User registered successfully" });
   } catch (error) {
+    req.logger.error(`Error registering user: ${error.message}`);
     res.status(500).send({ error: "Error registering user" });
   }
 };
@@ -36,16 +37,20 @@ const signin = async (req, res) => {
 
     const user = await User.findOne({ where: { username: username } });
     if (!user) {
+      req.logger.warn(`Invalid username ${username} or password`);
       return res.status(401).send({ error: "Invalid username or password" });
     }
 
     const validPassword = await bcrypt.compare(password, user.hashedPassword);
     if (!validPassword) {
+      req.logger.warn(`Invalid username ${username} or password`);
       return res.status(401).send({ error: "Invalid username or password" });
     }
     const token = jwt.sign({ _id: user.id }, process.env.JWT_SECRET);
+    req.logger.info(`User ${username} signed in successfully`);
     res.header("auth-token", token).send({ token: token });
   } catch (error) {
+    req.logger.error(`Error signing in user: ${error.message}`);
     res.status(500).send({ error: "Error signing in user" });
   }
 };

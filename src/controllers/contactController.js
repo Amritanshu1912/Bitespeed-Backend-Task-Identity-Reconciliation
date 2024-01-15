@@ -1,13 +1,12 @@
-const express = require("express");
 const Contact = require("../database/models/contacts");
 const {
-  createPrimaryContact,
+  createContact,
   consolidateContacts,
   handleBothPrimaryContacts,
-  handleBothSecondaryContacts,
   handleOneSecondaryContact,
+  handleBothSecondaryContacts,
 } = require("../services/consolidateService");
-const { findContacts } = require("../services/contactService");
+const { findContacts } = require("../services/findContactService");
 
 // Identify endpoint
 const identifyContact = async (req, res) => {
@@ -35,7 +34,7 @@ const identifyContact = async (req, res) => {
         link_precedence: "primary",
       });
 
-      // Send the response with an empty secondary contact array
+      // send response with an empty secondary contact array
       res.status(200).json({
         contact: {
           primaryContactId: newPrimaryContact.id,
@@ -63,8 +62,6 @@ const identifyContact = async (req, res) => {
           userEmail,
           userPhoneNumber
         );
-
-        // Send the response
         res.status(200).json({ contact: consolidatedContact });
       } else {
         // Requested email and phone number exist in different rows.
@@ -78,7 +75,6 @@ const identifyContact = async (req, res) => {
             foundByEmail,
             foundByPhone
           );
-          // Send the response
           res.status(200).json({ contact });
         } else if (
           foundByEmail.link_precedence === "secondary" &&
@@ -92,7 +88,6 @@ const identifyContact = async (req, res) => {
             userEmail,
             userPhoneNumber
           );
-          // Send the response
           res.status(200).json({ contact });
         } else {
           // One is primary and the other is secondary
@@ -103,7 +98,6 @@ const identifyContact = async (req, res) => {
             userEmail,
             userPhoneNumber
           );
-          // Send the response
           res.status(200).json({ contact });
         }
       }
@@ -112,15 +106,12 @@ const identifyContact = async (req, res) => {
       // Find the first contact that matches
       const foundContact = foundByEmail ? foundByEmail : foundByPhone;
 
-      // create Primary contact
-      await createPrimaryContact(foundContact, userEmail, userPhoneNumber);
-      // consolidate contact
+      await createContact(foundContact, userEmail, userPhoneNumber);
       const contact = await consolidateContacts(foundContact);
-      // Send the response
       res.status(200).json({ contact });
     }
   } catch (error) {
-    console.error("Error identifying contact:", error);
+    req.logger.error(`Error identifying contact: ${error.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -129,7 +120,7 @@ const identifyContact = async (req, res) => {
  * Get all contacts from the Contact model.
  * @returns {Promise<Array<Object>>} - An array of contact objects.
  */
-const getAllContacts = async () => {
+const getAllContacts = async (req, res) => {
   try {
     // Fetch all contacts from the Contact model
     const contacts = await Contact.findAll({
@@ -137,11 +128,11 @@ const getAllContacts = async () => {
       order: [["createdAt", "DESC"]], // Order by creation date, descending
     });
 
-    // Respond with the contacts as an array of objects
+    req.logger.info("Contacts retrieved successfully");
     res.json(contacts.map((contact) => contact.toJSON()));
   } catch (error) {
     // Handle any errors during the database query
-    console.error("Error retrieving contacts:", error);
+    req.logger.error(`Error retrieving contacts: ${error.message}`);
     // Respond with a 500 Internal Server Error and a meaningful error message
     res
       .status(500)

@@ -1,3 +1,4 @@
+const logger = require("../utils/logger");
 const Contact = require("../../database/models/contacts");
 const { Op } = require("sequelize");
 
@@ -14,8 +15,7 @@ async function findPrimaryContact(contact) {
         : await Contact.findByPk(contact.linked_id);
     return primaryContact;
   } catch (error) {
-    // Handle error when 'Contact.findByPk' fails or returns null
-    console.error("Error finding primary contact:", error);
+    logger.error("Error finding primary contact:", error);
     throw error;
   }
 }
@@ -42,7 +42,7 @@ async function findSecondaryContacts(foundContact) {
 
     return secondaryContactIdArray;
   } catch (error) {
-    console.error(
+    logger.error(
       "Error finding secondary contacts from findSecondaryContacts:",
       error
     );
@@ -60,9 +60,6 @@ async function findSecondaryContacts(foundContact) {
  */
 async function createContact(foundContact, email_, phoneNumber_) {
   try {
-    console.log("entered createContact function");
-    console.log("with arguments", foundContact, email_, phoneNumber_);
-
     const { id, linked_id, link_precedence } = foundContact;
     const createdContact = await Contact.create({
       email: email_,
@@ -72,7 +69,7 @@ async function createContact(foundContact, email_, phoneNumber_) {
     });
     return createdContact;
   } catch (error) {
-    console.error("Error in createContact:", error);
+    logger.error("Error in createContact:", error);
     throw error;
   }
 }
@@ -85,11 +82,7 @@ async function createContact(foundContact, email_, phoneNumber_) {
  */
 async function consolidateContacts(foundContact, email_, phoneNumber_) {
   try {
-    console.log("entered consolidateContacts function");
-    console.log("with arguments ->", foundContact, email_, phoneNumber_);
-
     const primaryContact = await findPrimaryContact(foundContact);
-
     const secondaryContactIdArray = await findSecondaryContacts(foundContact);
 
     // Consolidate the contact information
@@ -104,7 +97,7 @@ async function consolidateContacts(foundContact, email_, phoneNumber_) {
 
     return newContact;
   } catch (error) {
-    console.error("Error in consolidateContacts:", error);
+    logger.error("Error in consolidateContacts:", error);
     throw error;
   }
 }
@@ -117,11 +110,8 @@ async function consolidateContacts(foundContact, email_, phoneNumber_) {
  * @param {Object} foundContact2 - The second contact object.
  * @returns {Object} The consolidated contact object.
  */
-async function bedrBothPrimary(foundContact, foundContact2) {
+async function handleBothPrimaryContacts(foundContact, foundContact2) {
   try {
-    console.log("entered bedrBothPrimary");
-    console.log("with args ->", foundContact, foundContact2);
-
     // newer row becomes secondary, holds the id of older contact in linked_id
     const older =
       foundContact.created_at <= foundContact2.created_at
@@ -139,7 +129,7 @@ async function bedrBothPrimary(foundContact, foundContact2) {
         },
       }
     ).catch((error) => {
-      console.error("Error updating contacts:", error);
+      logger.error("Error updating contacts:", error);
       throw error;
     });
 
@@ -155,11 +145,11 @@ async function bedrBothPrimary(foundContact, foundContact2) {
       ),
       secondaryContactIds: secondaryContactIdArray,
     };
-    console.log(newContact);
+    logger.info(newContact);
     return newContact;
   } catch (error) {
     // Handle potential errors
-    console.error("Error in bedrBothPrimary :", error);
+    logger.error("Error in handleBothPrimaryContacts :", error);
     throw error;
   }
 }
@@ -174,16 +164,13 @@ async function bedrBothPrimary(foundContact, foundContact2) {
  * @param {String} phoneNumber_ - The requested phoneNumber string.
  * @returns {Object} The consolidated contact object.
  */
-async function bedrOneSecondary(
+async function handleOneSecondaryContact(
   foundContact,
   foundContact2,
   email_,
   phoneNumber_
 ) {
   try {
-    console.log("bedrOneSecondary");
-    console.log(foundContact, foundContact2);
-
     const primaryPrecedentContact =
       foundContact.link_precedence === "primary" ? foundContact : foundContact2;
     const secondaryPrecedentContact =
@@ -227,7 +214,7 @@ async function bedrOneSecondary(
           },
         }
       ).catch((error) => {
-        console.error("Error updating contacts:", error);
+        logger.error("Error updating contacts:", error);
         throw error;
       });
     }
@@ -246,7 +233,7 @@ async function bedrOneSecondary(
     return newContact;
   } catch (error) {
     // Handle potential errors
-    console.error("Error in bedrOneSecondary:", error);
+    logger.error("Error in handleOneSecondaryContact:", error);
     throw error;
   }
 }
@@ -261,21 +248,13 @@ async function bedrOneSecondary(
  * @param {String} phoneNumber_ - The requested phoneNumber string.
  * @returns {Object} The consolidated contact object.
  */
-async function bedrBothSecondary(
+async function handleBothSecondaryContacts(
   foundContact,
   foundContact2,
   email_,
   phoneNumber_
 ) {
   try {
-    console.log("entered in bedrBothSecondary");
-    console.log(
-      "with args ->",
-      foundContact,
-      foundContact2,
-      email_,
-      phoneNumber_
-    );
     // if linked-ids are equal then both pointing to same contact,
     // then we dont have to update the table's linked_id column
     let olderContact = foundContact;
@@ -302,7 +281,7 @@ async function bedrBothSecondary(
           },
         }
       ).catch((error) => {
-        console.error("Error updating Contact:", error);
+        logger.error("Error updating Contact:", error);
         throw error;
       });
     }
@@ -323,7 +302,7 @@ async function bedrBothSecondary(
     return newContact;
   } catch (error) {
     // Handle potential errors
-    console.error("Error in bedrBothSecondary:", error);
+    logger.error("Error in handleBothSecondaryContacts:", error);
     throw error;
   }
 }
@@ -331,7 +310,7 @@ async function bedrBothSecondary(
 module.exports = {
   createContact,
   consolidateContacts,
-  bedrBothPrimary,
-  bedrOneSecondary,
-  bedrBothSecondary,
+  handleBothPrimaryContacts,
+  handleBothSecondaryContacts,
+  handleOneSecondaryContact,
 };

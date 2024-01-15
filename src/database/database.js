@@ -1,5 +1,6 @@
+const logger = require("../utils/logger");
 const { Sequelize } = require("sequelize");
-const config = require("../config/config");
+const config = require("../../config/config");
 
 // Create a Sequelize instance and connect to the database
 const sequelize = new Sequelize(
@@ -16,9 +17,9 @@ const sequelize = new Sequelize(
 async function connectToDatabase() {
   try {
     await sequelize.authenticate();
-    console.log("Database connection has been established successfully.");
+    logger.info("Database connection has been established successfully.");
   } catch (error) {
-    console.error("Unable to connect to the database:", error);
+    logger.error("Unable to connect to the database:", error);
   }
 }
 
