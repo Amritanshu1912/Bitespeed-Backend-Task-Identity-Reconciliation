@@ -1,9 +1,9 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("./database");
+const sequelize = require("../database");
 
 // Define the Contact model
-const contacts = sequelize.define(
-  "contacts",
+const Contact = sequelize.define(
+  "Contact",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -45,7 +45,7 @@ const contacts = sequelize.define(
   },
   {
     sequelize,
-    modelName: "contact",
+    modelName: "Contact",
     tableName: "contacts", // Specify the table name
     timestamps: true,
     paranoid: true, // Enable soft deletes (deletedAt column)
@@ -53,4 +53,4 @@ const contacts = sequelize.define(
   }
 );
 
-module.exports = contacts;
+module.exports = Contact;
