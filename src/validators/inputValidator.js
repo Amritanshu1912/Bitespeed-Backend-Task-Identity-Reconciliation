@@ -17,7 +17,7 @@ const validateLoginUser = [
 // Validation for the identify endpoint
 const validateContact = [
   body("email").trim().isEmail().withMessage("Invalid email"),
-  body("phone_number")
+  body("phoneNumber")
     .trim()
     .isMobilePhone()
     .withMessage("Invalid phone number"),

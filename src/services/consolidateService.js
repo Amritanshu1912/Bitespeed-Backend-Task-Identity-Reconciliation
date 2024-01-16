@@ -1,5 +1,5 @@
 const logger = require("../utils/logger");
-const Contact = require("../../database/models/contacts");
+const Contact = require("../database/models/contacts");
 const { Op } = require("sequelize");
 
 /**

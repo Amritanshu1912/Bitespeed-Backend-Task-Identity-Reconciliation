@@ -1,38 +1,33 @@
 const winston = require("winston");
 
-const customFormat = winston.format.combine(
-  winston.format.simple(),
-  winston.format.timestamp(),
-  winston.format.printf(({ timestamp, level, message }) => {
-    return `${timestamp} [${level}]: ${message}`;
-  })
-);
-
-const options = {
-  file: {
-    level: "info",
-    filename: "../../logs/combined.log",
-    handleExceptions: true,
-    json: true,
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
-    colorize: true,
-  },
-  console: {
-    level: "debug",
-    handleExceptions: true,
-    json: false,
-    colorize: true,
-  },
-};
-
-// Define and configure the logger
 const logger = winston.createLogger({
-  format: customFormat,
+  format: winston.format.combine(
+    winston.format.colorize({ all: true }),
+    winston.format.simple(),
+    winston.format.timestamp({
+      format: "DD-MM HH:mm:ss",
+    }),
+    winston.format.errors({ stack: true }), // Include stack traces
+    winston.format.printf(({ timestamp, level, message, stack }) => {
+      return `[${timestamp}] [${level}]: ${message}${
+        stack ? `\n${stack}` : ""
+      }`;
+    })
+  ),
   transports: [
-    new winston.transports.Console(options.console),
-    new winston.transports.File(options.file),
+    new winston.transports.Console({
+      level: "debug",
+      handleExceptions: true,
+    }),
   ],
+  exitOnError: false, // do not exit on handled exceptions
+});
+
+winston.addColors({
+  error: "red",
+  warn: "yellow",
+  info: "cyan",
+  debug: "green",
 });
 
 module.exports = logger;

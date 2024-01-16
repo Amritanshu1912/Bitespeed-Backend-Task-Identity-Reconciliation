@@ -1,5 +1,5 @@
 const express = require("express");
-const { swaggerUi, specs } = require("../..swaggerConfig");
+const { swaggerUi, specs } = require("../swaggerConfig");
 
 const router = express.Router();
 

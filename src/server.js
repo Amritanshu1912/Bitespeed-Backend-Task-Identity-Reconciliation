@@ -1,10 +1,13 @@
-const sequelize = require("./src/database");
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
+
+//require("dotenv").config();
+const sequelize = require("./database/database");
 const app = require("./app");
-require("dotenv").config();
+const logger = require("./utils/logger");
 
 const PORT = process.env.APP_PORT || 3000;
-
-logger.info("Using PORT--------->", PORT);
+logger.info(`Using PORT---------> ${PORT}`);
 
 async function syncDatabaseAndStartServer() {
   try {

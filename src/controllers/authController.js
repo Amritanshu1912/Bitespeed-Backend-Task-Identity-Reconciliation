@@ -21,12 +21,13 @@ const signup = async (req, res) => {
     // Create a new user record in the database
     await User.create({
       username: username,
-      password: hashedPassword,
+      hashedPassword: hashedPassword,
     });
     req.logger.info(`User ${username} registered successfully`);
     res.status(201).send({ status: "User registered successfully" });
   } catch (error) {
-    req.logger.error(`Error registering user: ${error.message}`);
+    // console.error(error);
+    req.logger.error(`Error registering user: ${error}`);
     res.status(500).send({ error: "Error registering user" });
   }
 };

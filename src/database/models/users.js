@@ -30,12 +30,4 @@ const User = sequelize.define(
   }
 );
 
-// Hash the password before saving it to the database
-User.addHook("beforeCreate", async (user) => {
-  if (user.hashedPassword) {
-    const saltRounds = 10;
-    user.hashedPassword = await bcrypt.hash(user.hashedPassword, saltRounds);
-  }
-});
-
 module.exports = User;
