@@ -1,5 +1,5 @@
 const logger = require("../utils/logger");
-const { Contact } = require("../database/models/contacts");
+const Contact = require("../database/models/contacts");
 
 // Function to find contacts in the database based on email and phone number
 async function findContacts(userEmail, userPhoneNumber) {
@@ -29,7 +29,7 @@ async function findContacts(userEmail, userPhoneNumber) {
       foundByPhone,
     };
   } catch (error) {
-    logger.error(`Error finding contacts: ${error}`);
+    logger.error(`Error finding contacts: ${error}`, error);
     throw error; // Rethrow the error for handling in upper layers
   }
 }
