@@ -27,7 +27,7 @@ const signup = async (req, res) => {
     res.status(201).send({ status: "User registered successfully" });
   } catch (error) {
     // console.error(error);
-    req.logger.error(`Error registering user: ${error}`);
+    req.logger.error(`Error registering user: ${error}`, error);
     res.status(500).send({ error: "Error registering user" });
   }
 };
@@ -51,7 +51,7 @@ const signin = async (req, res) => {
     req.logger.info(`User ${username} signed in successfully`);
     res.header("auth-token", token).send({ token: token });
   } catch (error) {
-    req.logger.error(`Error signing in user: ${error.message}`);
+    req.logger.error(`Error signing in user: ${error.message}`, error);
     res.status(500).send({ error: "Error signing in user" });
   }
 };

@@ -15,7 +15,7 @@ const identifyContact = async (req, res) => {
 
     // Check for empty parameters
     if (userEmail === "" && userPhoneNumber === null) {
-      res.status(422).json({
+      return res.status(422).json({
         error: "Empty parameter received",
       });
     }
@@ -35,7 +35,7 @@ const identifyContact = async (req, res) => {
       });
 
       // send response with an empty secondary contact array
-      res.status(200).json({
+      return res.status(200).json({
         contact: {
           primaryContactId: newPrimaryContact.id,
           emails: [newPrimaryContact.email],
@@ -75,7 +75,7 @@ const identifyContact = async (req, res) => {
             foundByEmail,
             foundByPhone
           );
-          res.status(200).json({ contact });
+          return res.status(200).json({ contact });
         } else if (
           foundByEmail.link_precedence === "secondary" &&
           foundByPhone.link_precedence === "secondary"
@@ -88,7 +88,7 @@ const identifyContact = async (req, res) => {
             userEmail,
             userPhoneNumber
           );
-          res.status(200).json({ contact });
+          return res.status(200).json({ contact });
         } else {
           // One is primary and the other is secondary
           // handleOneSecondaryContact: one is primary and the other is secondary
@@ -98,7 +98,7 @@ const identifyContact = async (req, res) => {
             userEmail,
             userPhoneNumber
           );
-          res.status(200).json({ contact });
+          return res.status(200).json({ contact });
         }
       }
     } else {
@@ -108,11 +108,11 @@ const identifyContact = async (req, res) => {
 
       await createContact(foundContact, userEmail, userPhoneNumber);
       const contact = await consolidateContacts(foundContact);
-      res.status(200).json({ contact });
+      return res.status(200).json({ contact });
     }
   } catch (error) {
-    req.logger.error(`Error identifying contact: ${error.message}`);
-    res.status(500).json({ error: "Internal server error" });
+    req.logger.error(`Error identifying contact: ${error.message}`, error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -129,12 +129,12 @@ const getAllContacts = async (req, res) => {
     });
 
     req.logger.info("Contacts retrieved successfully");
-    res.json(contacts.map((contact) => contact.toJSON()));
+    return res.json(contacts.map((contact) => contact.toJSON()));
   } catch (error) {
     // Handle any errors during the database query
-    req.logger.error(`Error retrieving contacts: ${error.message}`);
+    req.logger.error(`Error retrieving contacts: ${error.message}`, error);
     // Respond with a 500 Internal Server Error and a meaningful error message
-    res
+    return res
       .status(500)
       .json({ error: "Unable to retrieve contacts. Please try again later." });
   }

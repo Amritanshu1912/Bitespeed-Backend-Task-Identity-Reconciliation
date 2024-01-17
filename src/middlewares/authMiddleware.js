@@ -44,7 +44,7 @@ const authenticate = async (req, res, next) => {
     req.user = decoded.user;
     next();
   } catch (error) {
-    req.logger.error(`Unauthorized: ${error.message || error}`);
+    req.logger.error(`Unauthorized: ${error.message || error}`, error);
     return res
       .status(401)
       .json({ message: `Unauthorized: ${error.message || error}` });
@@ -61,14 +61,14 @@ const authorize = (roles) => {
     try {
       // Check if the user has the necessary role to access the route
       if (req.user && req.user.role && !roles.includes(req.user.role)) {
-        req.logger.error("Forbidden: Access denied");
+        req.logger.error("Forbidden: Access denied", error);
         return res.status(403).json({ message: "Forbidden: Access denied" });
       }
 
       // If authorized, proceed to the next middleware or route handler
       next();
     } catch (error) {
-      req.logger.error("Internal Server Error");
+      req.logger.error("Internal Server Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
