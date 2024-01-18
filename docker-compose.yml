@@ -8,22 +8,27 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_PORT=${DB_PORT}
     volumes:
       - ./migrations:/docker-entrypoint-initdb.d
+      - db-data:/var/lib/postgresql/data
+
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
       timeout: 5s
       retries: 3
   app:
+    image: app_img
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
     ports:
       - 3000:${APP_PORT}
+
 volumes:
   db-data:

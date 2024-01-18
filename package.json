@@ -4,8 +4,9 @@
   "description": "Web service for identifying and tracking customers based on their contact information",
   "main": "app.js",
   "scripts": {
-    "start": "node ./src/server.js",
-    "dev": "nodemon ./src/server.js"
+    "doc": "nodemon --exec 'NODE_ENV=development node' ./src/server.js",
+    "dev": "nodemon --exec 'NODE_ENV=test node' ./src/server.js",
+    "test": "npx jest"
   },
   "author": "Amritanshu Singh",
   "dependencies": {

@@ -12,19 +12,21 @@ const signup = async (req, res) => {
     });
     if (existingUser) {
       req.logger.warn(`Username ${username} already exists`);
-      return res.status(400).json({ message: "Username already taken" });
+      return res.status(409).json({ message: "Username already taken" });
     }
 
     const saltRounds = 10; // or any other configurable value
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Create a new user record in the database
-    await User.create({
+    const newUser = await User.create({
       username: username,
       hashedPassword: hashedPassword,
     });
     req.logger.info(`User ${username} registered successfully`);
-    res.status(201).send({ status: "User registered successfully" });
+    res
+      .status(201)
+      .send({ id: newUser.id, status: "User registered successfully" });
   } catch (error) {
     // console.error(error);
     req.logger.error(`Error registering user: ${error}`, error);
@@ -38,21 +40,23 @@ const signin = async (req, res) => {
 
     const user = await User.findOne({ where: { username: username } });
     if (!user) {
-      req.logger.warn(`Invalid username ${username} or password`);
-      return res.status(401).send({ error: "Invalid username or password" });
+      req.logger.warn(`Invalid username ${username}.`);
+      return res.status(401).send({ error: "Invalid username." });
     }
 
     const validPassword = await bcrypt.compare(password, user.hashedPassword);
     if (!validPassword) {
-      req.logger.warn(`Invalid username ${username} or password`);
-      return res.status(401).send({ error: "Invalid username or password" });
+      req.logger.warn(`Invalid password`);
+      return res.status(401).send({ error: "Invalid password" });
     }
+
     const token = jwt.sign({ _id: user.id }, process.env.JWT_SECRET);
+
     req.logger.info(`User ${username} signed in successfully`);
-    res.header("auth-token", token).send({ token: token });
+    return res.status(201).header("auth-token", token).send({ token: token });
   } catch (error) {
     req.logger.error(`Error signing in user: ${error.message}`, error);
-    res.status(500).send({ error: "Error signing in user" });
+    return res.status(500).send({ error: "Error signing in user" });
   }
 };
 

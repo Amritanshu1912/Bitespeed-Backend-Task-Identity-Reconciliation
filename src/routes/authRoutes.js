@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { signup, signin, logout } = require("../controllers/authController.js");
 const {
-  validateRegisterUser,
+  validateSignUpUser,
   validateLoginUser,
   handleValidationErrors,
 } = require("../validators/inputValidator.js");
@@ -13,7 +13,7 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/signup", validateRegisterUser, handleValidationErrors, signup);
+router.post("/signup", validateSignUpUser, handleValidationErrors, signup);
 router.post("/signin", validateLoginUser, handleValidationErrors, signin);
 router.get("/logout", logout);
 

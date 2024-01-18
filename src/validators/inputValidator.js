@@ -1,7 +1,7 @@
 const { body, validationResult } = require("express-validator");
 
 // Validation for the registerUser endpoint
-const validateRegisterUser = [
+const validateSignUpUser = [
   body("username").trim().notEmpty().withMessage("Username is required"),
   body("password")
     .isLength({ min: 6 })
@@ -39,7 +39,7 @@ const handleValidationErrors = async (req, res, next) => {
 };
 
 module.exports = {
-  validateRegisterUser,
+  validateSignUpUser,
   validateLoginUser,
   validateContact,
   handleValidationErrors,
