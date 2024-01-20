@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const helmet = require("helmet");
-const { expressjwt: jwt } = require("express-jwt");
 
 const authRoutes = require("./routes/authRoutes");
 const contactRoutes = require("./routes/contactRoutes");
@@ -22,10 +21,6 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(helmet());
-app.use(
-  "/contact/contacts",
-  jwt({ secret: process.env.JWT_SECRET, algorithms: ["HS256"] })
-);
 
 // Routes
 app.use("/auth", authRoutes);
