@@ -21,7 +21,7 @@ const authenticate = async (req, res, next) => {
     }
 
     // Verify the token using the JWT_SECRET
-    const decoded = await new Promise((resolve, reject) => {
+    const { user } = await new Promise((resolve, reject) => {
       jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
         if (error) {
           req.logger.error(error);
@@ -40,8 +40,7 @@ const authenticate = async (req, res, next) => {
       });
     });
 
-    // Attach the decoded user information to the request object for further processing
-    req.user = decoded.user;
+    req.user = user;
     next();
   } catch (error) {
     req.logger.error(`Unauthorized: ${error.message || error}`, error);

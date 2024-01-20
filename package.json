@@ -6,7 +6,8 @@
   "scripts": {
     "doc": "nodemon --exec 'NODE_ENV=development node' ./src/server.js",
     "dev": "nodemon --exec 'NODE_ENV=test node' ./src/server.js",
-    "test": "npx jest"
+    "test": "npx jest --detectOpenHandles",
+    "testc": "npx jest --detectOpenHandles ./test/contact.test.js"
   },
   "author": "Amritanshu Singh",
   "dependencies": {

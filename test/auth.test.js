@@ -1,19 +1,20 @@
 const supertest = require("supertest");
-const { startServer } = require("../../src/server");
-const app = require("../../src/app");
-const User = require("../../src/database/models/users"); // Adjust the path to your User model
+const { startServer } = require("../src/server");
+const app = require("../src/app");
+const User = require("../src/database/models/users"); // Adjust the path to your User model
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 describe("Authentication Endpoints", () => {
   let request;
+  let server;
 
   beforeAll(async () => {
     request = supertest(app);
+    server = startServer();
   });
 
   afterAll((done) => {
-    const server = startServer();
     server.close(done);
   });
 
@@ -105,6 +106,23 @@ describe("Authentication Endpoints", () => {
         value: "",
       });
     });
+
+    it("should return 422 for invalid password", async () => {
+      const response = await supertest(app)
+        .post("/auth/signup")
+        .send({ username: "newuser", password: "short" });
+
+      expect(response.statusCode).toBe(422);
+      expect(response.body.errors).toContainEqual({
+        location: "body",
+        msg: "Password must be at least 6 characters",
+        path: "password",
+        type: "field",
+        value: "short",
+      });
+    });
+
+    // When a user signs up with a password that is too short (less than 6 characters), the API should return a status code of 422 and an error message indicating that the password must be at least 6 characters.
 
     it("should return 422 for invalid password", async () => {
       const response = await supertest(app)
