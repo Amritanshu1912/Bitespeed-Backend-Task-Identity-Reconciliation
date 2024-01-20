@@ -113,11 +113,11 @@ async function consolidateContacts(foundContact, email_, phoneNumber_) {
 async function handleBothPrimaryContacts(foundContact, foundContact2) {
   try {
     // newer row becomes secondary, holds the id of older contact in linked_id
-    const older =
+    const [older, newer] =
       foundContact.created_at <= foundContact2.created_at
-        ? foundContact
-        : foundContact2;
-    const newer = older === foundContact ? foundContact2 : foundContact;
+        ? [foundContact, foundContact2]
+        : [foundContact2, foundContact];
+
     await Contact.update(
       {
         linked_id: older.id,
@@ -309,6 +309,8 @@ async function handleBothSecondaryContacts(
 
 module.exports = {
   createContact,
+  findPrimaryContact,
+  findSecondaryContacts,
   consolidateContacts,
   handleBothPrimaryContacts,
   handleBothSecondaryContacts,

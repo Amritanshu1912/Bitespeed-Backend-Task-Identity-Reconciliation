@@ -13,103 +13,100 @@ const identifyContact = async (req, res) => {
   try {
     const { email: userEmail, phoneNumber: userPhoneNumber } = req.body;
 
-    // Check for empty parameters
-    if (userEmail === "" && userPhoneNumber === null) {
-      return res.status(422).json({
-        error: "Empty parameter received",
-      });
-    }
-
     // Find contacts in the database based on email and phone number
     const { foundByEmail, foundByPhone } = await findContacts(
       userEmail,
       userPhoneNumber
     );
 
-    if (foundByEmail === null && foundByPhone === null) {
-      // If the contact doesn't exist, create a new contact as the primary contact
-      const newPrimaryContact = await Contact.create({
-        email: userEmail,
-        phone_number: userPhoneNumber,
-        link_precedence: "primary",
-      });
+    let contact;
 
-      // send response with an empty secondary contact array
-      return res.status(200).json({
-        contact: {
+    const num = (foundByEmail ? 1 : 0) + (foundByPhone ? 1 : 0);
+
+    switch (num) {
+      case 0:
+        // If the contact doesn't exist, create a new contact as the primary contact
+        const newPrimaryContact = await Contact.create({
+          email: userEmail,
+          phone_number: userPhoneNumber,
+          link_precedence: "primary",
+        });
+
+        // send response with an empty secondary contact array
+        contact = {
           primaryContactId: newPrimaryContact.id,
           emails: [newPrimaryContact.email],
           phoneNumbers: [newPrimaryContact.phone_number],
           secondaryContactIds: [],
-        },
-      });
-    } else if (foundByEmail && foundByPhone) {
-      // Both contacts exist
-      const sameRow = await Contact.findOne({
-        where: {
-          email: userEmail,
-          phone_number: userPhoneNumber,
-        },
-      });
+        };
+        break;
 
-      if (sameRow) {
-        // If the row exists where email = requested email and phone number = requested phone number,
-        // no need to update rows, consolidate contact
-        const foundContact = sameRow;
+      case 1:
+        // Find the first contact that matches
+        const foundContact = foundByEmail || foundByPhone;
+        await createContact(foundContact, userEmail, userPhoneNumber);
+        contact = await consolidateContacts(foundContact);
+        break;
 
-        const consolidatedContact = await consolidateContacts(
-          foundContact,
-          userEmail,
-          userPhoneNumber
-        );
-        res.status(200).json({ contact: consolidatedContact });
-      } else {
-        // Requested email and phone number exist in different rows.
-        if (
-          foundByEmail.link_precedence === "primary" &&
-          foundByPhone.link_precedence === "primary"
-        ) {
-          // Both exist in different rows and both are primary,
-          // handleBothPrimaryContacts: both exist in different rows
-          const contact = await handleBothPrimaryContacts(
-            foundByEmail,
-            foundByPhone
-          );
-          return res.status(200).json({ contact });
-        } else if (
-          foundByEmail.link_precedence === "secondary" &&
-          foundByPhone.link_precedence === "secondary"
-        ) {
-          // Both exist in different rows and both are secondary,
-          // handleBothSecondaryContacts: both exist in different rows
-          const contact = await handleBothSecondaryContacts(
-            foundByEmail,
-            foundByPhone,
+      case 2:
+        // Both contacts exist
+        const sameRow = await Contact.findOne({
+          where: {
+            email: userEmail,
+            phone_number: userPhoneNumber,
+          },
+        });
+
+        if (sameRow) {
+          // If the row exists where email = requested email and phone number = requested phone number,
+          // no need to update rows, consolidate contact
+          const foundContact = sameRow;
+          const consolidatedContact = await consolidateContacts(
+            foundContact,
             userEmail,
             userPhoneNumber
           );
-          return res.status(200).json({ contact });
+
+          contact = consolidatedContact;
         } else {
-          // One is primary and the other is secondary
-          // handleOneSecondaryContact: one is primary and the other is secondary
-          const contact = await handleOneSecondaryContact(
-            foundByEmail,
-            foundByPhone,
-            userEmail,
-            userPhoneNumber
-          );
-          return res.status(200).json({ contact });
+          // Requested email and phone number exist in different rows.
+          if (
+            foundByEmail.link_precedence === "primary" &&
+            foundByPhone.link_precedence === "primary"
+          ) {
+            // Both exist in different rows and both are primary,
+            // handleBothPrimaryContacts: both exist in different rows
+            contact = await handleBothPrimaryContacts(
+              foundByEmail,
+              foundByPhone
+            );
+          } else if (
+            foundByEmail.link_precedence === "secondary" &&
+            foundByPhone.link_precedence === "secondary"
+          ) {
+            // Both exist in different rows and both are secondary,
+            // handleBothSecondaryContacts: both exist in different rows
+            contact = await handleBothSecondaryContacts(
+              foundByEmail,
+              foundByPhone,
+              userEmail,
+              userPhoneNumber
+            );
+          } else {
+            // One is primary and the other is secondary
+            // handleOneSecondaryContact: one is primary and the other is secondary
+            contact = await handleOneSecondaryContact(
+              foundByEmail,
+              foundByPhone,
+              userEmail,
+              userPhoneNumber
+            );
+          }
         }
-      }
-    } else {
-      // Case where ONLY EITHER phone Number OR email matches
-      // Find the first contact that matches
-      const foundContact = foundByEmail ? foundByEmail : foundByPhone;
-
-      await createContact(foundContact, userEmail, userPhoneNumber);
-      const contact = await consolidateContacts(foundContact);
-      return res.status(200).json({ contact });
+        break;
     }
+
+    return res.status(200).json({ contact });
   } catch (error) {
     req.logger.error(`Error identifying contact: ${error.message}`, error);
     return res.status(500).json({ error: "Internal server error" });
@@ -122,18 +119,17 @@ const identifyContact = async (req, res) => {
  */
 const getAllContacts = async (req, res) => {
   try {
-    // Fetch all contacts from the Contact model
     const contacts = await Contact.findAll({
-      attributes: { exclude: ["deletedAt"] }, // Exclude deleted contacts
-      order: [["createdAt", "DESC"]], // Order by creation date, descending
+      attributes: { exclude: ["deletedAt"] },
+      order: [["createdAt", "DESC"]],
     });
 
-    req.logger.info("Contacts retrieved successfully");
-    return res.json(contacts.map((contact) => contact.toJSON()));
+    req.logger.info("Contacts retrieved successfully -> ", contacts);
+    const contactsData = contacts.map((contact) => ({ ...contact }));
+
+    return res.json(contactsData);
   } catch (error) {
-    // Handle any errors during the database query
     req.logger.error(`Error retrieving contacts: ${error.message}`, error);
-    // Respond with a 500 Internal Server Error and a meaningful error message
     return res
       .status(500)
       .json({ error: "Unable to retrieve contacts. Please try again later." });
