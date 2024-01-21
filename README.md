@@ -1,168 +1,165 @@
-# Customer Identity Reconciliation Web Service
+<div align="center"s>
+<h1 align="center">Welcome to Contact Reconciliation Service 👋</h1>
+<p align="center">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" />
+  <a href="https://choosealicense.com/licenses/mit/" target="_blank">
+    <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
+  </a> 
+    <p><i>Developed with the software and tools below.</i></p>
+<img src="https://img.shields.io/badge/-Docker-004E89?lo/igo=Docker&style=flat" alt='Docker\' />
+<img src="https://via.placeholder.com/1/0000/00000000" alt="spacer" /><img src="https://img.shields.io/badge/-Node.js-004E89?logo=Node.js&style=flat" alt='Node.js\' />
+<img src="https://via.placeholder.com/1/0000/00000000" alt="spacer" /><img src="https://img.shields.io/badge/-Express.js-004E89?logo=Express.js&style=flat" alt='Express.js\' />
+<img src="https://via.placeholder.com/1/0000/00000000" alt="spacer" /><img src="https://img.shields.io/badge/-PostgreSQL-004E89?logo=PostgreSQL&style=flat" alt='PostgreSQL' />
+<img src="https://via.placeholder.com/1/0000/00000000" alt="spacer" /><img src="https://img.shields.io/badge/-Sequelize-004E89?logo=Sequelize&style=flat" alt='Sequelize' />
+<img src="https://via.placeholder.com/1/0000/00000000" alt="spacer" /><img src="https://img.shields.io/badge/-Jest-004E89?logo=Jest&style=flat" alt='Jest\' />
+<img src="https://via.placeholder.com/1/0000/00000000" alt="spacer" /><img src="https://img.shields.io/badge/-Swagger-004E89?logo=Swagger&style=flat" alt='Swagger"' />
+<img src="https://via.placeholder.com/1/0000/00000000" alt="spacer" />
 
-This repository contains a web service that helps identify and consolidate customer information based on their contact information across multiple purchases. It exposes an /identify endpoint to receive HTTP POST requests and returns the consolidated contact information.
+  </p>
+</div>
+The Contact Reconciliation Backend Service streamlines customer data unification by reconciling contact information across multiple interactions. This project enhances customer identification, ensures secure user authentication, and retrieves consolidated data.
 
-## API Endpoint
+## 📚 Table of Contents
 
-The web service takes two arguments, i.e. email and phoneNumber.
+- [🔍 Overview](#overview)
+- [🌟 Features](#features)
+- [🌐 API Endpoints](#api-endpoints)
+- [🚀 Getting Started](#getting-started)
+  - [🏁 Prerequisites](#prerequisites)
+  - [⚙️ Installation](#installation)
+  - [🐳 Docker Deployment](#docker-deployment)
+- [🛠️ Usage](#usage)
+- [🖥️ Tech Stack](#tech-stack)
+- [👨‍💻 Authors](#authors)
+- [📜 License](#license)
 
-#### URL to send POST request
+## 🔍 Overview <a id="overview"></a>
 
-```http
-  POST /identify
+The Contact Reconciliation Backend Service is a Node.js application that provides secure user authentication and efficient contact retrieval, merging customer details across transactions. This is a Node.js project with a Docker containerization setup, using Express.js for the web framework and PostgreSQL as the database. The project includes a RESTful API with authentication and contact management endpoints, as well as Swagger documentation for API exploration. The project also includes unit tests using Jest and integration tests using Supertest.
+
+## 🌟 Features <a id="features"></a>
+
+- **Secure Authentication**: Robust user authentication process with JWT for secure access control.
+- **Contact Consolidation**: Advanced algorithms to merge customer contact data from multiple sources, ensuring a single customer view.
+- **Data Retrieval**: Quick and secure access to unified customer information.
+- **API Endpoints**: Well-defined endpoints for managing contacts and user accounts.
+- **Swagger-Enabled**: Interactive API documentation for easy endpoint testing and exploration.
+- **Testing Suite**: Comprehensive testing with Jest for unit tests and Supertest for integration tests to ensure code quality and reliability.
+- **Docker Support**: Simplified deployment and scaling with Docker containerization.
+
+## 🌐 API Endpoints <a id="api-endpoints"></a>
+
+Refer to the [API Documentation](api-docs.md) for comprehensive API documentation. Additionally, you can explore the Swagger documentation located at `./src/swagger.yaml` which outlines the available endpoints for the Contact Reconciliation Backend Service. To access API docs via a user interface, utilize the Swagger UI, which is accessible at the /api-docs endpoint when running the server.
+
+## 🚀 Getting Started <a id="getting-started"></a>
+
+### Prerequisites <a id="prerequisites"></a>
+
+Before you begin, ensure that you have the following installed on your machine:
+
+- Node.js
+- Docker
+
+### Installation <a id="installation"></a>
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/Amritanshu1912/customer-identification-service.git
+   cd customer-identification-service
+   ```
+
+2. Install dependencies: <br>
+
+   Run `npm install` or `yarn install` in your terminal to install the necessary dependencies.
+
+3. Configure environment:<br>
+
+   Create a `.env` file in the root directory and populate it with the required environment variables.
+
+4. Start the development server:<br>
+
+   Execute `npm run dev` or `yarn dev` to start the server on the default port 5000.
+
+### Docker Deployment <a id="docker-deployment"></a>
+
+1. Build the Docker image:
+
+   ```bash
+    docker build -t customer-identification-service .
+   ```
+
+2. Run the Docker container:
+
+   ```bash
+   docker run -p 5000:5000 customer-identification-service
+   ```
+
+Alternatively, you can use Docker Compose to start the service:
+
+```bash
+sudo docker-compose up
 ```
 
-| Parameter     | Type     | Description                              |
-| :------------ | :------- | :--------------------------------------- |
-| `email`       | `string` | Email address of the customer (Optional) |
-| `phoneNumber` | `number` | Phone number of the customer (Optional)  |
+## 🛠️ Usage <a id="usage"></a>
 
-Returns an HTTP 200 response with a JSON payload containing the consolidated contact.
+### Send Requests
 
-```json
-{
-	"contact":{
-		"primaryContatctId": number,
-		"emails": string[], // first element being email of primary contact
-		"phoneNumbers": number[], // first element being phoneNumber of priary contact
-		"secondaryContactIds": number[] // Array of all contact IDs that are "seondary" to the primary contact
-	}
-}
+Refer to the [API Documentation](api-docs.md) for details on sending requests and testing the API endpoints.
+
+The service will be accessible at `http://localhost:3000` (or `http://localhost:5000` if using the development server). Use Postman, curl, or axios to send API requests.
+
+#### Using curl
+
+Send a request with the following command, modifying the JSON body and API endpoint as needed:
+
+```bash
+ curl -X POST -H "Content-Type: application/json" -d '{"email":"example@example.com", "phoneNumber":"9947583299"}' http://127.0.0.1:3000/contact/identify -i
 ```
 
-#### Example
+#### Using axios
 
-Request:
+Axios is included in the `package.json`. To send a request using axios:
 
-```json
-{
-  "email": "mcfly@hillvalley.edu",
-  "phoneNumber": "1234567890"
-}
+```bash
+ cd test/ node identifyRequest.js
 ```
 
-Success Response:
+Modify the JSON body in `identifyRequest.js` as required before sending the request.
 
-```json
-{
-  "contact": {
-    "primaryContactId": 1,
-    "emails": ["primary@example.com", "secondary@example.com"],
-    "phoneNumbers": ["1234567890"],
-    "secondaryContactIds": [2, 3]
-  }
-}
+### Testing <a id="testing"></a>
+
+Run all tests with npm or yarn:
+
+```bash
+ npm run test
 ```
 
-## Features
+To run a specific test file:
 
-- Consolidates customer contacts based on email and phone number
-- Supports identifying new customers and creating primary contacts
-- Maintains primary and secondary contact relationships
-- Provides an endpoint for identifying customers based on contact
+```bash
+ npm run test ./path/to/test_file.test
+```
 
-## Processing POST Request
-
-_Note_ - Based on the given examples, the database contained a maximum of two rows. In these examples, the response included arrays for emails and phone numbers, each containing no more than two values. However, it wasnt explicitly mentioned that i have to return only the sent details and the primary_id's details. Therefore, I have inferred that it is necessary to include all the emails and phone numbers associated with the customer present in the database in the response.
-
-Post request is sent to identifyCustomer.js which takes email and phoneNumber from the req.body and queries the db table for a match. we acheive this by Op.or operator.
-
-There are a few cases that arise. for each case we want to update database if necessary and consolidate contacts to send in response.
-
-1. neither email nor phoneNumber matches
-2. either email or phoneNumber matches
-3. Both, email and phoneNumber matches and belongs to same row in db
-4. Both, email and phoneNumber matches and belongs to different rows in db
-
-These 4 cases are resolved with different functions which are being imported from a created function library in the project.
-
-## Tech stack used
+## 🖥️ Tech Stack <a id="tech-stack"></a>
 
 - Node.js
 - Express.js
 - PostgreSQL
 - Sequelize ORM for PostgreSQL
 - Docker
+- Jest for Testing
+- Swagger for api documentation
 
-## Install instructions
+## 👨‍💻 Authors
 
-### Prerequisites
+### Amritanshu Singh <a id="authors"></a>
 
-Make sure you have the following dependencies installed on your machine:
+[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://www.github.com/Amritanshu1912)&nbsp;&nbsp;
+[![LinkedIn](https://img.shields.io/badge/-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/your-linkedin-username)&nbsp;&nbsp;
+[![GeeksForGeeks](https://img.shields.io/badge/-GeeksForGeeks-0F9D58?style=for-the-badge&logo=geeksforgeeks&logoColor=white)](https://auth.geeksforgeeks.org/user/your-geeksforgeeks-username/profile)
 
-- Node.js
-- Docker
+## 📜 License <a id="license"></a>
 
-### Getting Started
-
-To set up and run the FluxKart Customer Identification Web Service on your local machine, follow these steps:
-
-1. Clone this repository to your local machine:
-
-```bash
-git clone https://github.com/your-username/fluxkart-customer-identification.git
-```
-
-2. Change into the project's directory
-
-```bash
-cd fluxkart-customer-identification
-```
-
-3. Install the required dependencies:
-
-```bash
-npm install
-```
-
-4. Start the PostgreSQL database and web service using Docker:
-
-```bash
-sudo docker-compose up
-```
-
-The web service will be running at http://localhost:3000 and is ready to recieve requests.
-
-When the docker image is built, a SQL script is run to create database and seed it with 5 rows.
-
-You can either use curl or axios to send post requests.
-
-#### Method 1 : curl
-
-open another terminal and use command.
-
-```bash
-curl -X POST -H "Content-Type: application/json" -d '{"email":"example@example.com", "phoneNumber":"9947583299"}' http://127.0.0.1:3000/identify -i
-
-```
-
-#### Method 2 : axios
-
-Axios is already present in package.json file.
-Open another terminal and type
-
-```bash
-cd req-sender/
-```
-
-There is a file called identifyRequest.js which uses axios library to send post request. You can change the json body's parameters. When ready to send the request, type in terminal
-
-```bash
-node identifyRequest.js
-```
-
-You should be able to see the response in terminal.
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-## 🔗 Links
-
-[![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://katherineoelsner.com/)
-[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/)
-[![GeeksForGeeks](https://img.shields.io/badge/GeeksforGeeks-gray?style=for-the-badge&logo=geeksforgeeks&logoColor=35914c)](<(https://katherineoelsner.com/)>)
-
-## Authors
-
-- [@Amritanshu Singh](https://www.github.com/Amritanshu1912)
+Copyright © 2024 [Amritanshu Singh](https://github.com/Amritanshu1912).<br />
+This project is [MIT](https://choosealicense.com/licenses/mit/) licensed.
