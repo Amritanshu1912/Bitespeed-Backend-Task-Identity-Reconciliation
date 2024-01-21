@@ -30,8 +30,8 @@ The Contact Reconciliation Backend Service streamlines customer data unification
   - [🐳 Docker Deployment](#docker-deployment)
 - [🛠️ Usage](#usage)
 - [🖥️ Tech Stack](#tech-stack)
-- [👨‍💻 Authors](#authors)
 - [📜 License](#license)
+- [👨‍💻 Authors](#authors)
 
 ## 🔍 Overview <a id="overview"></a>
 
@@ -152,6 +152,10 @@ To run a specific test file:
 - Jest for Testing
 - Swagger for api documentation
 
+## 📜 License <a id="license"></a>
+
+Copyright © 2024 [Amritanshu Singh](https://github.com/Amritanshu1912).<br />
+This project is [MIT](https://choosealicense.com/licenses/mit/) licensed.
 ## 👨‍💻 Authors
 
 ### Amritanshu Singh <a id="authors"></a>
@@ -160,7 +164,4 @@ To run a specific test file:
 [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/your-linkedin-username)&nbsp;&nbsp;
 [![GeeksForGeeks](https://img.shields.io/badge/-GeeksForGeeks-0F9D58?style=for-the-badge&logo=geeksforgeeks&logoColor=white)](https://auth.geeksforgeeks.org/user/your-geeksforgeeks-username/profile)
 
-## 📜 License <a id="license"></a>
 
-Copyright © 2024 [Amritanshu Singh](https://github.com/Amritanshu1912).<br />
-This project is [MIT](https://choosealicense.com/licenses/mit/) licensed.
