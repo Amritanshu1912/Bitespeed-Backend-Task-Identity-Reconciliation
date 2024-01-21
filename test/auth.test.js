@@ -1,51 +1,43 @@
 const supertest = require("supertest");
-const { startServer } = require("../src/server");
+const sequelize = require("../src/database/database");
 const app = require("../src/app");
-const User = require("../src/database/models/users"); // Adjust the path to your User model
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const User = require("../src/database/models/users"); // Adjust the path to your User model
+const { startServer } = require("../src/server");
+
+jest.mock("jsonwebtoken");
+jest.mock("bcrypt"); // Mock bcrypt
+jest.mock("../../src/database/models/users"); // Mock the User model
 
 describe("Authentication Endpoints", () => {
-  let request;
-  let server;
+  let testRequest;
+  let appServer;
 
   beforeAll(async () => {
-    request = supertest(app);
-    server = startServer();
+    testRequest = supertest(app);
+    appServer = await startServer();
+    console.log("Server started successfully.");
   });
 
-  afterAll((done) => {
-    server.close(done);
+  afterAll(async () => {
+    await appServer.close();
+    await sequelize.close();
+    console.log("Server closed successfully.");
   });
-
-  const resetMocks = () => {
-    User.findOne = jest.fn();
-    User.findOne.mockReset();
-
-    User.create = jest.fn();
-    User.create.mockReset();
-
-    bcrypt.hash == jest.fn();
-    bcrypt.hash.mockReset();
-
-    bcrypt.compare == jest.fn();
-    bcrypt.compare.mockReset();
-
-    jwt.sign = jest.fn();
-    jwt.sign.mockReset();
-  };
-
-  //jest.mock("../../src/database/models/users"); // Mock the User model
-
-  jest.mock("bcrypt"); // Mock bcrypt
-  jest.mock("jsonwebtoken"); // Mock jsonwebtoken
 
   describe("POST /auth/signup", () => {
     const userData = {
       username: "newuser",
       password: "password123",
     };
-    beforeEach(() => resetMocks());
+    beforeEach(() => {
+      jest.resetAllMocks();
+
+      jwt.sign = jest.fn();
+      bcrypt.hash = jest.fn();
+      bcrypt.compare = jest.fn();
+    });
 
     it("should register a new user successfully", async () => {
       User.findOne.mockResolvedValue(null);
@@ -141,7 +133,13 @@ describe("Authentication Endpoints", () => {
   });
 
   describe("POST /auth/signin", () => {
-    beforeEach(() => resetMocks());
+    beforeEach(() => {
+      jest.resetAllMocks();
+
+      jwt.sign = jest.fn();
+      bcrypt.hash = jest.fn();
+      bcrypt.compare = jest.fn();
+    });
 
     const mockUser = {
       id: 1,
