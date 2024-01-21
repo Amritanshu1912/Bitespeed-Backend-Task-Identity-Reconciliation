@@ -49,7 +49,8 @@ The Contact Reconciliation Backend Service is a Node.js application that provide
 
 ## 🌐 API Endpoints <a id="api-endpoints"></a>
 
-Refer to the [API Documentation](api-docs.md) for comprehensive API documentation. Additionally, you can explore the Swagger documentation located at `./src/swagger.yaml` which outlines the available endpoints for the Contact Reconciliation Backend Service. To access API docs via a user interface, utilize the Swagger UI, which is accessible at the /api-docs endpoint when running the server.
+Refer to the [API Documentation](api-docs.md) for comprehensive API documentation. Additionally, you can explore the Swagger documentation located at `./src/swagger.yaml` which outlines the available endpoints for the Contact Reconciliation Backend Service. <br>
+To access API docs via a user interface, utilize the Swagger UI, which is accessible at the /api-docs endpoint when running the server.
 
 ## 🚀 Getting Started <a id="getting-started"></a>
 
